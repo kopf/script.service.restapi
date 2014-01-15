@@ -54,7 +54,15 @@ class Artists(MusicView):
 
 
 class ArtistDetails(MusicView):
-    pass
+    valid_params = ['properties']
+
+    def GET(self, artist_id):
+        self.method = 'AudioLibrary.GetArtistDetails'
+        try:
+            self.params['artistid'] = int(artist_id)
+        except ValueError:
+            raise web.badrequest('Artist ID must be an integer.')
+        return self.execute()
 
 
 class Albums(MusicView):
