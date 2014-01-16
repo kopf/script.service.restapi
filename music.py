@@ -4,39 +4,41 @@ from view import View
 
 
 class MusicView(View):
-    def _parse_params(self):
+    def _parse_params(self, valid_params):
         """Parse params in the url / POST payload, generating a dict we can use
         in a JSON-RPC request to XBMC"""
         params = web.input()
-        if 'albumartistsonly' in self.valid_params:
-            self.params['albumartistsonly'] = params.get('albumartistsonly') == 'true'
-        if 'properties' in self.valid_params and params.get('properties'):
-            self.params['properties'] = params['properties'].split(',')
-        if 'start' in self.valid_params:
+        retval = {}
+        if 'albumartistsonly' in valid_params:
+            retval['albumartistsonly'] = params.get('albumartistsonly') == 'true'
+        if 'fields' in valid_params and params.get('fields'):
+            retval['properties'] = params['fields'].split(',')
+        if 'start' in valid_params:
             try:
                 pagination_start = int(params.get('start', 0))
             except ValueError:
                 raise web.badrequest('"start" must be an integer.')
-            self.params['limits'] = {'start': pagination_start}
-        if 'limit' in self.valid_params and 'limit' in params:
+            retval['limits'] = {'start': pagination_start}
+        if 'limit' in valid_params and 'limit' in params:
             try:
-                self.params['limits']['end'] = pagination_start + int(params['limit'])
+                retval['limits']['end'] = pagination_start + int(params['limit'])
             except ValueError:
                 raise web.badrequest('"limit" must be an integer.')
-        if 'sort' in self.valid_params and 'sort' in params:
-            self.params['sort'] = {
+        if 'sort' in valid_params and 'sort' in params:
+            retval['sort'] = {
                 "order": "descending" if params['sort'][0] == '-' else 'ascending',
                 "method": params['sort'][1:],
                 "ignorearticle": params.get('ignorearticle') == 'true'
             }
-        if 'filter' in self.valid_params and params.get('filter'):
+        if 'filter' in valid_params and params.get('filter'):
             # FIXME
             query = params['filter'].split(' ')
-            self.params['filter'] = {
+            retval['filter'] = {
                 'field': query[0],
                 'operator': query[1],
                 'value': ' '.join(query[2:])
             }
+        return retval
 
 
 class Music(MusicView):
@@ -46,40 +48,68 @@ class Music(MusicView):
 
 
 class Artists(MusicView):
-    valid_params = ['albumartistsonly', 'properties', 'limit', 'start', 'sort', 'filter']
-
     def GET(self):
-        self.method = 'AudioLibrary.GetArtists'
-        return self.execute()
+        method = 'AudioLibrary.GetArtists'
+        valid_params = ['albumartistsonly', 'fields', 'limit', 'start', 'sort', 'filter']
+        params = self._parse_params(valid_params)
+        return self.execute(method, params)
 
 
 class ArtistDetails(MusicView):
-    valid_params = ['properties']
-
     def GET(self, artist_id):
-        self.method = 'AudioLibrary.GetArtistDetails'
+        method = 'AudioLibrary.GetArtistDetails'
+        valid_params = ['fields']
+        params = self._parse_params(valid_params)
         try:
-            self.params['artistid'] = int(artist_id)
+            params['artistid'] = int(artist_id)
         except ValueError:
             raise web.badrequest('Artist ID must be an integer.')
-        return self.execute()
+        return self.execute(method, params)
 
 
 class Albums(MusicView):
-    pass
+    def GET(self):
+        method = 'AudioLibrary.GetAlbums'
+        valid_params = ['fields', 'limit', 'start', 'sort', 'filter']
+        params = self._parse_params(valid_params)
+        return self.execute(method, params)
 
 
 class AlbumDetails(MusicView):
-    pass
+    def GET(self, album_id):
+        method = 'AudioLibrary.GetAlbumDetails'
+        valid_params = ['fields']
+        params = self._parse_params(valid_params)
+        try:
+            params['albumid'] = int(album_id)
+        except ValueError:
+            raise web.badrequest('Album ID must be an integer.')
+        return self.execute(method, params)
 
 
 class Genres(MusicView):
-    pass
+    def GET(self):
+        method = 'AudioLibrary.GetGenres'
+        valid_params = ['fields', 'limit', 'start', 'sort']
+        params = self._parse_params(valid_params)
+        return self.execute(method, params)
 
 
 class Songs(MusicView):
-    pass
+    def GET(self):
+        method = 'AudioLibrary.GetSongs'
+        valid_params = ['fields', 'limit', 'start', 'sort', 'filter']
+        params = self._parse_params(valid_params)
+        return self.execute(method, params)
 
 
 class SongDetails(MusicView):
-    pass
+    def GET(self, song_id):
+        method = 'AudioLibrary.GetSongDetails'
+        valid_params = ['fields']
+        params = self._parse_params(valid_params)
+        try:
+            params['songid'] = int(song_id)
+        except ValueError:
+            raise web.badrequest('Song ID must be an integer.')
+        return self.execute(method, params)
