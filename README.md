@@ -19,3 +19,40 @@ A list of valid GET parameters, and their usage.
 _AudioLibrary.GetArtists_
 
 Returns a list of artists. 
+
+### GET /music/artists/`id`
+
+_AudioLibrary.GetArtistDetails_
+
+Returns details for a specific artist. 
+
+### GET /music/albums
+
+_AudioLibrary.GetAlbums_
+
+Returns a list of albums.
+
+### GET /music/albums/`id`
+
+_AudioLibrary.GetAlbumDetails_
+
+Returns details for a specific album.
+
+### GET /music/genres
+
+_AudioLibrary.GetGenres_
+
+Returns a list of genres.
+
+### GET /music/songs
+
+_AudioLibrary.GetSongs_
+
+Returns a list of songs.
+
+### GET /music/songs/`id`
+
+_AudioLibrary.GetSongDetails_
+
+Returns details for a specific song.
+
